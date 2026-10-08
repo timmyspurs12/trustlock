@@ -1,1 +1,125 @@
 @import "tailwindcss";
+
+/**
+ * TrustLock design system — "Ledger & Trust".
+ * Warm paper, deep ink, restrained PayPal blue. Amber = funds held.
+ * Green = successful release. Red = genuine failure only.
+ */
+@theme {
+  --color-paper: #F6F4EE;
+  --color-card: #FFFFFF;
+  --color-ink: #101F38;
+  --color-ink-soft: #3D4A63;
+  --color-ink-faint: #77809A;
+  --color-line: #E3DFD3;
+  --color-line-soft: #EEEAE0;
+  --color-paypal: #0070E0;
+  --color-paypal-deep: #005EA6;
+  --color-amber: #B45309;
+  --color-amber-strong: #92400E;
+  --color-amber-bg: #FDF1D7;
+  --color-green: #15803D;
+  --color-green-bg: #E3F3E8;
+  --color-red: #B91C1C;
+  --color-red-bg: #FBE5E5;
+  --color-blue: #1D4ED8;
+  --color-blue-bg: #E3ECFB;
+  --color-orange: #C2410C;
+  --color-orange-bg: #FDEEDF;
+  --color-indigo: #4338CA;
+  --color-indigo-bg: #E7E7FB;
+  --color-teal: #0F766E;
+  --color-teal-bg: #DFF3F0;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-code), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --shadow-card: 0 1px 2px rgba(16, 31, 56, 0.04), 0 1px 3px rgba(16, 31, 56, 0.06);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+  }
+  ::selection {
+    background: rgba(0, 112, 224, 0.16);
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-paypal ring-offset-2 ring-offset-paper;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .tl-card {
+    @apply rounded-lg border border-line bg-card shadow-card;
+  }
+  .tl-kpi-label {
+    @apply text-xs font-semibold uppercase tracking-wider text-ink-faint;
+  }
+  .tl-section-title {
+    @apply text-sm font-semibold uppercase tracking-wider text-ink-faint;
+  }
+  .tl-h1 {
+    @apply font-display text-3xl font-semibold tracking-tight text-ink;
+  }
+  .tl-h2 {
+    @apply font-display text-xl font-semibold tracking-tight text-ink;
+  }
+  .tl-muted {
+    @apply text-sm text-ink-soft;
+  }
+  .tl-faint {
+    @apply text-xs text-ink-faint;
+  }
+  .tl-input {
+    @apply w-full rounded-md border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-paypal focus:outline-none focus:ring-2 focus:ring-paypal/20;
+  }
+  .tl-label {
+    @apply mb-1 block text-sm font-medium text-ink;
+  }
+  .tl-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-paypal px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-paypal-deep disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .tl-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-card px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-line-soft disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .tl-btn-success {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-green px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green/90 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .tl-btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-red px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red/90 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .tl-chip {
+    @apply inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold;
+  }
+  .tl-dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full;
+  }
+  .tl-step-current {
+    @apply ring-4 ring-paypal/15;
+  }
+  .tl-step-current-amber {
+    @apply ring-4 ring-amber/20;
+  }
+  @keyframes tl-pulse-soft {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 112, 224, 0.18); }
+    50% { box-shadow: 0 0 0 6px rgba(0, 112, 224, 0); }
+  }
+  .tl-pulse {
+    animation: tl-pulse-soft 2.2s ease-in-out infinite;
+  }
+}

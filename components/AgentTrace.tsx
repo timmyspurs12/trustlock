@@ -1,33 +1,16 @@
 import type { AgentAction } from '@/lib/db/milestones';
-
-const TRACE_TYPES = new Set([
-  'EVIDENCE_RECEIVED',
-  'AI_REVIEW_STARTED',
-  'EVIDENCE_FETCHED',
-  'CRITERION_EVALUATED',
-  'AI_VERDICT_CREATED',
-  'POLICY_EVALUATED',
-  'RELEASE_APPROVED',
-  'CAPTURE_REQUESTED',
-  'CAPTURE_PENDING',
-  'PAID',
-  'PAID_PARTIAL',
-  'CAPTURE_FAILED',
-  'REQUEST_CHANGES',
-  'HUMAN_REVIEW',
-  'HUMAN_APPROVAL',
-  'HUMAN_DECISION',
-]);
+import { formatTime } from '@/lib/format';
 
 const LABELS: Record<string, string> = {
   EVIDENCE_RECEIVED: 'Evidence received',
   AI_REVIEW_STARTED: 'AI review started',
   EVIDENCE_FETCHED: 'Deliverable fetched & inspected',
   CRITERION_EVALUATED: 'Criterion evaluated',
-  AI_VERDICT_CREATED: 'Verdict created',
+  AI_VERDICT_CREATED: 'AI verdict created',
+  AI_REVIEW_FAILED: 'AI review failed',
   POLICY_EVALUATED: 'Policy evaluated',
   RELEASE_APPROVED: 'Release approved',
-  CAPTURE_REQUESTED: 'Capture requested (PayPal)',
+  CAPTURE_REQUESTED: 'PayPal capture requested',
   CAPTURE_PENDING: 'Capture pending settlement',
   PAID: 'Paid',
   PAID_PARTIAL: 'Partially paid',
@@ -36,41 +19,76 @@ const LABELS: Record<string, string> = {
   HUMAN_REVIEW: 'Sent to human review',
   HUMAN_APPROVAL: 'Human approved',
   HUMAN_DECISION: 'Human decision',
+  PAYMENT_AUTHORIZED: 'Payment authorized (funds held)',
+  FUNDING_STARTED: 'Funding started',
+  MILESTONE_CREATED: 'Milestone created',
+};
+
+const ACTOR_STYLES: Record<string, string> = {
+  agent: 'bg-indigo-bg text-indigo',
+  system: 'bg-blue-bg text-blue',
+  client: 'bg-amber-bg text-amber-strong',
 };
 
 /**
- * The agent's execution trace — real audit events recorded server-side as the
- * review/release actually ran (never faked). Rendered as a timeline.
+ * The agent's execution trace — a timeline of REAL audit events recorded
+ * server-side while the review/release actually ran. Nothing is fabricated.
  */
 export function AgentTrace({ actions }: { actions: AgentAction[] }) {
-  const trace = actions.filter((a) => TRACE_TYPES.has(a.actionType));
-  if (trace.length === 0) return null;
+  if (actions.length === 0) return null;
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-6">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Agent trace</h2>
-      <ol className="mt-3 space-y-2">
-        {trace.map((a, i) => (
-          <li key={a.id} className="flex items-start gap-3 text-sm">
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700">
-              ✓
-            </span>
-            <div className="min-w-0">
-              <div className="font-medium text-slate-800">
-                {LABELS[a.actionType] ?? a.actionType}
-                {a.actionType === 'CRITERION_EVALUATED' && a.inputReference && (
-                  <span className="font-normal text-slate-500"> — {a.inputReference.replace('criterion ', '')}</span>
-                )}
+    <section className="tl-card p-6">
+      <h2 className="tl-section-title">Agent trace</h2>
+      <ol className="mt-4 space-y-3">
+        {actions.map((a, i) => {
+          const isLast = i === actions.length - 1;
+          return (
+            <li key={a.id} className="flex gap-3">
+              <div className="flex flex-col items-center">
+                <span
+                  className={`mt-0.5 flex h-2 w-2 shrink-0 rounded-full ${
+                    a.actor === 'agent' ? 'bg-indigo' : a.actor === 'client' ? 'bg-amber' : 'bg-blue'
+                  }`}
+                  aria-hidden="true"
+                />
+                {!isLast && <span className="w-px flex-1 bg-line" aria-hidden="true" />}
               </div>
-              <div className="text-xs text-slate-500">
-                {new Date(a.createdAt).toLocaleTimeString()} · {a.actor}
-                {a.decision && <span className="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 font-mono">{a.decision}</span>}
-                {a.confidence !== null && a.actionType === 'CRITERION_EVALUATED' && (
-                  <span className="ml-1">{(a.confidence * 100).toFixed(0)}%</span>
-                )}
+              <div className="min-w-0 flex-1 pb-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-ink">
+                    {LABELS[a.actionType] ?? a.actionType}
+                    {a.actionType === 'CRITERION_EVALUATED' && a.inputReference && (
+                      <span className="font-normal text-ink-faint">
+                        {' '}
+                        — {a.inputReference.replace('criterion ', '')}
+                      </span>
+                    )}
+                  </span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${
+                      ACTOR_STYLES[a.actor] ?? 'bg-line-soft text-ink-soft'
+                    }`}
+                  >
+                    {a.actor}
+                  </span>
+                  {a.decision && (
+                    <span className="rounded-full bg-line-soft px-1.5 py-0.5 font-mono text-xs text-ink-soft">
+                      {a.decision}
+                    </span>
+                  )}
+                  {a.confidence !== null && a.actionType === 'CRITERION_EVALUATED' && (
+                    <span className="font-mono text-xs text-ink-faint">
+                      {Math.round(a.confidence * 100)}%
+                    </span>
+                  )}
+                </div>
+                <time className="mt-0.5 block font-mono text-xs text-ink-faint" dateTime={a.createdAt}>
+                  {formatTime(a.createdAt)}
+                </time>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );

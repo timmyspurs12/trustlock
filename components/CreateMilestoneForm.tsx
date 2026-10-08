@@ -75,49 +75,61 @@ export function CreateMilestoneForm() {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form onSubmit={submit} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-slate-700">Title</label>
+        <label htmlFor="tl-title" className="tl-label">
+          Title
+        </label>
         <input
+          id="tl-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={120}
           placeholder="e.g. Landing page for the bakery client"
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#0070E0] focus:outline-none"
+          className="tl-input"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700">Description</label>
+        <label htmlFor="tl-description" className="tl-label">
+          Description
+        </label>
         <textarea
+          id="tl-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           maxLength={2000}
           placeholder="What does the freelancer deliver?"
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#0070E0] focus:outline-none"
+          className="tl-input"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-slate-700">Amount</label>
+          <label htmlFor="tl-amount" className="tl-label">
+            Amount
+          </label>
           <input
+            id="tl-amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
             inputMode="decimal"
             placeholder="100.00"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#0070E0] focus:outline-none"
+            className="tl-input"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700">Currency</label>
+          <label htmlFor="tl-currency" className="tl-label">
+            Currency
+          </label>
           <select
+            id="tl-currency"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#0070E0] focus:outline-none"
+            className="tl-input"
           >
             <option value="USD">USD</option>
             <option value="EUR">EUR</option>
@@ -128,35 +140,41 @@ export function CreateMilestoneForm() {
 
       <div>
         <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium text-slate-700">Acceptance criteria</label>
+          <span className="tl-label mb-0">Acceptance criteria</span>
           <button
             type="button"
             onClick={() => setCriteria((rows) => [...rows, { key: '', description: '', required: true }])}
-            className="text-sm font-medium text-[#0070E0] hover:underline"
+            className="text-sm font-medium text-paypal hover:underline"
           >
             + Add criterion
           </button>
         </div>
         <div className="mt-2 space-y-2">
           {criteria.map((criterion, index) => (
-            <div key={index} className="flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 p-2">
+            <div
+              key={index}
+              className="flex flex-col gap-2 rounded-md border border-line bg-paper p-3 sm:flex-row sm:items-start"
+            >
               <input
                 value={criterion.key}
                 onChange={(e) => updateCriterion(index, { key: e.target.value })}
                 placeholder="key"
-                className="w-28 shrink-0 rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-[#0070E0] focus:outline-none"
+                aria-label={`Criterion ${index + 1} key`}
+                className="tl-input sm:w-32 sm:shrink-0"
               />
               <input
                 value={criterion.description}
                 onChange={(e) => updateCriterion(index, { description: e.target.value })}
                 placeholder="e.g. Homepage is deployed at the submitted URL"
-                className="min-w-0 flex-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-[#0070E0] focus:outline-none"
+                aria-label={`Criterion ${index + 1} description`}
+                className="tl-input sm:min-w-0 sm:flex-1"
               />
-              <label className="flex shrink-0 items-center gap-1 text-xs text-slate-600">
+              <label className="flex shrink-0 items-center gap-2 text-sm text-ink-soft">
                 <input
                   type="checkbox"
                   checked={criterion.required}
                   onChange={(e) => updateCriterion(index, { required: e.target.checked })}
+                  className="rounded border-line"
                 />
                 required
               </label>
@@ -164,8 +182,8 @@ export function CreateMilestoneForm() {
                 <button
                   type="button"
                   onClick={() => setCriteria((rows) => rows.filter((_, i) => i !== index))}
-                  className="shrink-0 text-slate-400 hover:text-red-600"
-                  aria-label="Remove criterion"
+                  className="shrink-0 self-center text-ink-faint hover:text-red"
+                  aria-label={`Remove criterion ${index + 1}`}
                 >
                   ✕
                 </button>
@@ -173,18 +191,18 @@ export function CreateMilestoneForm() {
             </div>
           ))}
         </div>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-2 text-xs text-ink-faint">
           The key becomes a stable id (e.g. &quot;homepage&quot;); leave it blank to auto-generate one.
         </p>
       </div>
 
-      {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && (
+        <p className="rounded-md border border-red/40 bg-red-bg px-3 py-2 text-sm text-red" role="alert">
+          {error}
+        </p>
+      )}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full rounded-md bg-[#0070E0] px-4 py-2 text-sm font-medium text-white hover:bg-[#005ea6] disabled:opacity-60"
-      >
+      <button type="submit" disabled={submitting} className="tl-btn-primary w-full" aria-busy={submitting}>
         {submitting ? 'Creating…' : 'Create milestone'}
       </button>
     </form>
