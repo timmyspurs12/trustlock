@@ -11,7 +11,22 @@ Built for the **PayPal AI Hackathon 2026** (Devpost). All money movement runs ag
 ## Phase status
 
 - **Phase 0 — payment primitive spike: GO** (6 PASS · 1 PARTIAL · 0 FAIL against the live sandbox). See [`spike/README.md`](spike/README.md) and [`spike/FINDINGS.md`](spike/FINDINGS.md). `npm run spike` remains a permanent regression test.
-- **Phase 1 — payment foundation: in progress.** Next.js 15 + PostgreSQL + server-side PayPal REST + PayPal JS SDK (buyer approval). Flow: create milestone → fund (server creates `intent=AUTHORIZE` order) → buyer approves → server authorizes → funds HELD (`AUTHORIZED`). No capture yet — release is Phase 2.
+- **Phase 1 — payment foundation: GO.** Next.js 15 + PostgreSQL + server-side PayPal REST + PayPal JS SDK (buyer approval). Flow: create milestone → fund (server creates `intent=AUTHORIZE` order) → buyer approves → server authorizes → funds HELD (`AUTHORIZED`). Live-verified: $100.00 held, not captured.
+- **Phase 2 — AI verification → policy → release: in progress.** The core product loop: freelancer submits evidence → the AI agent evaluates **every structured acceptance criterion** against fetched evidence (Zod-validated, criterion-by-criterion, INCONCLUSIVE when evidence is insufficient) → a **deterministic policy engine** decides whether release is permitted → controlled PayPal capture → reconciliation (`CAPTURE_PENDING` vs `PAID`). The AI never calls PayPal directly. Run the policy safety tests with `npm run test:policy`.
+
+## AI verification loop (Phase 2)
+
+```
+AUTHORIZED milestone (funds held)
+  → POST /api/milestones/[id]/evidence     freelancer submits deliverable URL + notes
+  → POST /api/milestones/[id]/review       server fetches evidence, AI agent evaluates
+                                           each criterion (PASS/FAIL/INCONCLUSIVE + evidence)
+  → policy engine (lib/policy/engine.ts)   AUTO_RELEASE | HUMAN_REVIEW | REQUEST_CHANGES | REJECTED
+  → AUTO_RELEASE → POST capture (server)   idempotent, stable PayPal-Request-Id
+  → reconcile                              CAPTURE_PENDING until PayPal reports COMPLETED → PAID
+```
+
+The demo fixture at `/demo/deliverable` is a real, inspectable page the agent verifies against the demo milestone's criteria.
 
 ## Run it locally
 

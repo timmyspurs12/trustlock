@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 /**
- * Acceptance criteria are stored as structured JSONB so the Phase 2 AI agent
- * can evaluate each criterion individually (not one unstructured paragraph).
+ * Acceptance criteria are stored as structured JSONB so the AI agent can
+ * evaluate each criterion individually (not one unstructured paragraph).
  */
 export const acceptanceCriterionSchema = z.object({
   id: z
@@ -46,3 +46,34 @@ export const authorizeSchema = z.object({
  * any smuggled fields (e.g. a client-side amount override).
  */
 export const fundSchema = z.strictObject({});
+
+/* ---------------- Phase 2 ---------------- */
+
+/** Freelancer evidence submission (append-only: a new submission is a new row). */
+export const evidenceSchema = z.object({
+  deliverableUrl: z.string().url('deliverableUrl must be a valid URL').max(2000),
+  notes: z.string().max(4000).default(''),
+  evidenceUrls: z.array(z.string().url('evidenceUrls must be valid URLs').max(2000)).max(3).default([]),
+});
+
+/**
+ * Release endpoint. The browser can never call PayPal capture directly.
+ * - APPROVE (default): release funds (requires policy AUTO_RELEASE, or this
+ *   flag when the policy requires a human).
+ * - REQUEST_CHANGES / REJECT: the human overrides the AI recommendation.
+ */
+export const releaseSchema = z.object({
+  reviewId: z.string().uuid().optional(),
+  decision: z.enum(['APPROVE', 'REQUEST_CHANGES', 'REJECT']).default('APPROVE'),
+  approvedAmount: z
+    .number()
+    .positive()
+    .refine((n) => Math.abs(n * 100 - Math.round(n * 100)) < 1e-9, 'amount must have at most 2 decimal places')
+    .optional(),
+});
+
+/** Reconciliation endpoint (polling fallback for async capture settlement). */
+export const reconcileSchema = z.object({
+  releaseId: z.string().uuid().optional(),
+  milestoneId: z.string().uuid().optional(),
+});
