@@ -256,11 +256,13 @@ async function s2FullLifecycle() {
   console.log(`[S2] order status after capture: ${orderAfter.json?.status}; authorization status after capture: ${authAfter.json?.status}; authorization expiration_time=${held.json?.expiration_time}`);
 
   const heldNotCaptured = held.json?.status === 'CREATED';
+  // A capture is "accepted" when PayPal returns COMPLETED or PENDING (async settlement).
+  const captureAccepted = (s) => s === 'COMPLETED' || s === 'PENDING';
   const pass =
     heldNotCaptured &&
-    capture.json.status === 'COMPLETED' &&
+    captureAccepted(capture.json.status) &&
     !!captureId &&
-    capGet.json?.status === 'COMPLETED' &&
+    captureAccepted(capGet.json?.status) &&
     capGet.json?.amount?.value === '25.00' &&
     authAfter.json?.status === 'CAPTURED';
   record(
@@ -314,9 +316,11 @@ async function s3PartialCapture() {
   const authFinal = await getAuthorization(authId);
   console.log(`[S3] authorization after both partial captures: status=${authFinal.json?.status}`);
 
+  // A capture is "accepted" when PayPal returns COMPLETED or PENDING (async settlement).
+  const captureAccepted = (s) => s === 'COMPLETED' || s === 'PENDING';
   const pass =
-    cap1.ok && cap1.json?.status === 'COMPLETED' && cap1Get.json?.amount?.value === '70.00' &&
-    cap2.ok && cap2.json?.status === 'COMPLETED' && cap2Get.json?.amount?.value === '30.00' &&
+    cap1.ok && captureAccepted(cap1.json?.status) && cap1Get.json?.amount?.value === '70.00' &&
+    cap2.ok && captureAccepted(cap2.json?.status) && cap2Get.json?.amount?.value === '30.00' &&
     retry.json?.id === cap1.json?.id && // idempotent retry returned the SAME capture
     !over.ok &&
     authFinal.json?.status === 'CAPTURED';

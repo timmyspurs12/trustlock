@@ -20,6 +20,7 @@ Full machine-readable output: `results.json` (gitignored; IDs and states only, n
 | 10 | **Authorization validity is exactly 29 days.** Created `2026-10-08T13:31:30Z` → `expiration_time: 2026-11-06T13:31:30Z`. |
 | 11 | **Reauthorize guardrail.** Day-0 reauthorize → `422 REAUTHORIZATION_TOO_SOON`: *"A reauthorization is only allowed once from Day 4 to Day 29 since the date of the original authorization."* Capture success is best within the 3-day honor period. |
 | 12 | **Card-source authorizations are `seller_protection: NOT_ELIGIBLE`** in sandbox (AVS `A`, CVV `M`, response `0000`). Wallet-funded payments are the path with buyer/seller protection — another reason the production flow uses the PayPal wallet, not cards. |
+| 13 | **Captures can be accepted with status `PENDING`** (async settlement) instead of settling to `COMPLETED` immediately — observed in the Phase 1 regression run; captures stayed PENDING for minutes with correct amounts while the authorization reached `CAPTURED`. Production release logic must treat PENDING as "accepted, settlement in flight" and reconcile to COMPLETED via the `PAYMENT.CAPTURE.COMPLETED` webhook + polling. Wallet-funded authorizations (the TrustLock flow) showed `seller_protection: ELIGIBLE`. |
 
 ## Production flow TrustLock should implement (corrected by the spike)
 
