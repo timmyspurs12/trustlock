@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.vercel/
+.env
+.data/
+spike/results.json
+.npm/
+*.tsbuildinfo
+.sudo_as_admin_successful
