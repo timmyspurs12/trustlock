@@ -10,6 +10,7 @@ import { ReviewPanel } from '@/components/ReviewPanel';
 import { HumanApprovalCard } from '@/components/HumanApprovalCard';
 import { EvidenceForm } from '@/components/EvidenceForm';
 import { AgentTrace } from '@/components/AgentTrace';
+import { LiveTrace } from '@/components/LiveTrace';
 import { ActivityFeed } from '@/components/ActivityFeed';
 import { FundButton } from '@/components/FundButton';
 import { ConfirmAuthorizationButton } from '@/components/ConfirmAuthorizationButton';
@@ -95,6 +96,8 @@ export default async function MilestonePage({ params }: { params: Promise<{ id: 
               </p>
             </section>
           )}
+
+          <LiveTrace milestoneId={milestone.id} />
 
           <AgentTrace actions={actions} />
 

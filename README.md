@@ -12,7 +12,9 @@ Built for the **PayPal AI Hackathon 2026** (Devpost). All money movement runs ag
 
 - **Phase 0 — payment primitive spike: GO** (6 PASS · 1 PARTIAL · 0 FAIL against the live sandbox). See [`spike/README.md`](spike/README.md) and [`spike/FINDINGS.md`](spike/FINDINGS.md). `npm run spike` remains a permanent regression test.
 - **Phase 1 — payment foundation: GO.** Next.js 15 + PostgreSQL + server-side PayPal REST + PayPal JS SDK (buyer approval). Flow: create milestone → fund (server creates `intent=AUTHORIZE` order) → buyer approves → server authorizes → funds HELD (`AUTHORIZED`). Live-verified: $100.00 held, not captured.
-- **Phase 2 — AI verification → policy → release: in progress.** The core product loop: freelancer submits evidence → the AI agent evaluates **every structured acceptance criterion** against fetched evidence (Zod-validated, criterion-by-criterion, INCONCLUSIVE when evidence is insufficient) → a **deterministic policy engine** decides whether release is permitted → controlled PayPal capture → reconciliation (`CAPTURE_PENDING` vs `PAID`). The AI never calls PayPal directly. Run the policy safety tests with `npm run test:policy`.
+- **Phase 2 — AI verification → policy → release: GO.** The core product loop: freelancer submits evidence → the AI agent evaluates **every structured acceptance criterion** against fetched evidence (Zod-validated, criterion-by-criterion, INCONCLUSIVE when evidence is insufficient) → a **deterministic policy engine** decides whether release is permitted → controlled PayPal capture → reconciliation (`CAPTURE_PENDING` vs `PAID`). The AI never calls PayPal directly. Run the policy safety tests with `npm run test:policy`.
+- **Phase 3 — premium product UI: GO.** A "Ledger & Trust" design system (warm paper, deep ink, restrained PayPal blue; Fraunces + Instrument Sans + JetBrains Mono), an Overview dashboard with real metrics, the milestone page as an operational control room (lifecycle stepper, AI verification panel, agent trace, PayPal panel, audit trail), Activity and Insights routes, and truthful state visualization throughout.
+- **Phase 4 — AG Studio + submission package: GO.** The Insights page is an **AG Studio** dashboard over live TrustLock data (funds KPIs, verdict charts, milestone + activity grids) with an **AI assistant panel** (Studio Agent Framework) powered by Gemini through a server-side proxy (`/api/studio-ai`). Plus: MIT `LICENSE`, `DEMO.md` (3-minute demo script), and `SUBMISSION.md` (Devpost package + deployment guide).
 
 ## AI verification loop (Phase 2)
 
@@ -27,6 +29,13 @@ AUTHORIZED milestone (funds held)
 ```
 
 The demo fixture at `/demo/deliverable` is a real, inspectable page the agent verifies against the demo milestone's criteria.
+
+## AG Studio insights + AI assistant (Phase 4)
+
+The **Insights** page (`/insights`) is an embedded **AG Studio** dashboard fed with live TrustLock data: funds held / captured / pending settlement KPIs, funds-by-state and AI-verdict charts, and milestone + audit-activity grids. Switch to **Edit** mode to build custom widgets or use the **AI assistant** panel — a Studio Agent Framework harness backed by Gemini (via the server-side `/api/studio-ai` proxy, so the API key never reaches the browser).
+
+- Studio license: optional locally; for a watermark-free hosted demo, request the free 45-day trial at https://www.ag-grid.com/studio and set `AG_STUDIO_LICENSE_KEY`.
+- Build note: AG Studio + AG Grid Enterprise are large — on memory-constrained machines build with `NODE_OPTIONS=--max-old-space-size=3072 npm run build`.
 
 ## Run it locally
 

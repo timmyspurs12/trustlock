@@ -157,3 +157,102 @@ export async function getInsights(): Promise<InsightsData> {
     totalMilestones: Number(totalMilestones.rows[0]?.v ?? 0),
   };
 }
+
+/* ---------------- AG Studio data (read-only) ---------------- */
+
+export interface StudioMilestoneRow {
+  id: string;
+  title: string;
+  status: string;
+  paymentState: string;
+  amount: number;
+  authorized: number;
+  captured: number;
+  held: number;
+  pending: number;
+  verdict: string;
+  confidence: number;
+  criteriaPassed: number;
+  criteriaTotal: number;
+  autoReleased: number;
+  count: number;
+  updatedAt: string;
+}
+
+export interface StudioActivityRow {
+  id: string;
+  at: string;
+  type: string;
+  actor: string;
+  decision: string;
+  milestoneTitle: string;
+  amount: number;
+}
+
+/** Real rows for the AG Studio dashboard (Insights page). */
+export async function getStudioData(): Promise<{
+  milestones: StudioMilestoneRow[];
+  activity: StudioActivityRow[];
+}> {
+  await initDb();
+  const pool = getPool();
+  const res = await pool.query(
+    `SELECT m.id, m.title, m.status, m.amount, m.updated_at,
+            p.trustlock_status AS payment_state,
+            p.authorized_amount, p.captured_amount,
+            r.verdict, r.confidence, r.criteria_results,
+            EXISTS(
+              SELECT 1 FROM agent_actions aa
+              WHERE aa.milestone_id = m.id
+                AND aa.action_type = 'RELEASE_APPROVED'
+                AND aa.decision = 'AUTO_RELEASE'
+            ) AS auto_released
+     FROM milestones m
+     LEFT JOIN paypal_payments p ON p.milestone_id = m.id
+     LEFT JOIN LATERAL (
+       SELECT verdict, confidence, criteria_results
+       FROM ai_reviews
+       WHERE milestone_id = m.id
+       ORDER BY created_at DESC
+       LIMIT 1
+     ) r ON true
+     ORDER BY m.updated_at DESC`
+  );
+  const milestones: StudioMilestoneRow[] = res.rows.map((row) => {
+    const authorized = Number(row.authorized_amount ?? 0);
+    const captured = Number(row.captured_amount ?? 0);
+    const paymentState = row.payment_state ?? 'NONE';
+    const criteriaResults = row.criteria_results ?? [];
+    return {
+      id: row.id,
+      title: row.title,
+      status: row.status,
+      paymentState,
+      amount: Number(row.amount),
+      authorized,
+      captured,
+      held: paymentState === 'AUTHORIZED' ? authorized - captured : 0,
+      pending: paymentState === 'CAPTURE_PENDING' ? captured : 0,
+      verdict: row.verdict ?? '—',
+      confidence: row.confidence === null ? 0 : Number(row.confidence),
+      criteriaPassed: criteriaResults.filter((c: any) => c?.result === 'PASS').length,
+      criteriaTotal: Array.isArray(criteriaResults) ? criteriaResults.length : 0,
+      autoReleased: row.auto_released ? 1 : 0,
+      count: 1,
+      updatedAt: row.updated_at,
+    };
+  });
+
+  const activityRows = await getActivity(200);
+  const activity: StudioActivityRow[] = activityRows.map((e) => ({
+    id: e.id,
+    at: e.at,
+    type: e.type,
+    actor: e.actor,
+    decision: e.decision ?? '',
+    milestoneTitle: e.milestoneTitle,
+    amount: e.amount ?? 0,
+  }));
+
+  return { milestones, activity };
+}
