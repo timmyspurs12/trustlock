@@ -9,3 +9,6 @@ spike/results.json
 .npm/
 *.tsbuildinfo
 .sudo_as_admin_successful
+
+# SSH keys (never commit — contains the private deploy key)
+.ssh/

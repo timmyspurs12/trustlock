@@ -1,23 +1,29 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import { Nav } from '@/components/Nav';
 import './globals.css';
 
-const display = Fraunces({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
+// Self-hosted fonts (next/font/local) — no build-time Google Fonts fetch,
+// so the production build works in any environment. Variable fonts declared
+// with their weight ranges; the CSS variables are unchanged.
+const display = localFont({
+  src: './fonts/Fraunces.woff2',
+  weight: '500 700',
   variable: '--font-display',
+  display: 'swap',
 });
-const body = Instrument_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const body = localFont({
+  src: './fonts/InstrumentSans.woff2',
+  weight: '400 700',
   variable: '--font-body',
+  display: 'swap',
 });
-const code = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
+const code = localFont({
+  src: './fonts/JetBrainsMono.woff2',
+  weight: '400 500',
   variable: '--font-code',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
