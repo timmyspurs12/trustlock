@@ -12,3 +12,6 @@ spike/results.json
 
 # SSH keys (never commit — contains the private deploy key)
 .ssh/
+
+# Demo voiceover audio (binary assets — download from workspace, not git)
+voiceover/
